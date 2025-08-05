@@ -14,7 +14,6 @@ export default function ProfilePage() {
             return;
         }
 
-        // Отримати профіль
         api.get("/user/profile", {
             headers: { Authorization: `Bearer ${token}` }
         }).then(res => setUser(res.data))
@@ -24,7 +23,7 @@ export default function ProfilePage() {
             });
 
         // Отримати оголошення користувача
-        api.get("/user/ads", {
+        api.get("/ads/my", {
             headers: { Authorization: `Bearer ${token}` }
         }).then(res => setAds(res.data))
             .catch(err => console.error(err));

@@ -1,40 +1,67 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { loginUser, loginWithGoogle } from "../services/authService";
 
-export default function LoginPage() {
+export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
-        setLoading(true);
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const token = await userCredential.user.getIdToken(); // <-- Firebase ID Token
-            localStorage.setItem("token", token);
+            setLoading(true);
+            await loginUser({ email, password });
+            alert("Успішний вхід!");
             window.location.href = "/";
-        } catch (error) {
-            console.error(error);
-            alert("Помилка входу: " + error.message);
+        } catch (err) {
+            alert("Неправильний email або пароль");
+            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
+    const handleGoogleLogin = async () => {
+        try {
+            await loginWithGoogle();
+            alert("Успішний вхід через Google!");
+            window.location.href = "/";
+        } catch (err) {
+            alert("Помилка при вході через Google");
+            console.error(err);
+        }
+    };
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-10 space-y-6">
-                <h2 className="text-3xl font-bold text-center text-gray-800">Вхід</h2>
-                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border p-3 rounded" />
-                <input type="password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border p-3 rounded" />
-                <button onClick={handleLogin} disabled={loading} className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">
-                    {loading ? "Завантаження..." : "Увійти"}
-                </button>
-                <p className="text-sm text-center text-gray-600">
-                    Ще не маєш акаунту? <a href="/signup" className="text-blue-600 font-medium">Зареєструватися</a>
-                </p>
-            </div>
+        <div className="max-w-md mx-auto p-6">
+            <h2 className="text-2xl font-bold mb-4">Вхід</h2>
+            <input
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full mb-2 p-2 border rounded"
+            />
+            <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Пароль"
+                className="w-full mb-4 p-2 border rounded"
+            />
+
+            <button
+                onClick={handleLogin}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white p-2 rounded mb-2"
+            >
+                {loading ? "Вхід..." : "Увійти"}
+            </button>
+
+            <button
+                onClick={handleGoogleLogin}
+                className="w-full bg-red-500 text-white p-2 rounded"
+            >
+                Увійти через Google
+            </button>
         </div>
     );
 }
