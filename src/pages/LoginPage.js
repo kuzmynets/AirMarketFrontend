@@ -1,5 +1,6 @@
 import { useState } from "react";
-import api from "../api/api";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -9,55 +10,29 @@ export default function LoginPage() {
     const handleLogin = async () => {
         setLoading(true);
         try {
-            const res = await api.post("/auth/login", new URLSearchParams({
-                username: email,
-                password,
-            }));
-            localStorage.setItem("token", res.data.access_token);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const token = await userCredential.user.getIdToken(); // <-- Firebase ID Token
+            localStorage.setItem("token", token);
             window.location.href = "/";
-        } catch (err) {
-            alert("Помилка авторизації");
+        } catch (error) {
+            console.error(error);
+            alert("Помилка входу: " + error.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center px-4">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-10 space-y-6">
-                <h2 className="text-4xl font-extrabold text-center text-gray-800 tracking-tight">
-                    Вхід в AirMarket
-                </h2>
-                <p className="text-center text-gray-500">
-                    Ласкаво просимо назад! Будь ласка, увійдіть, щоб продовжити.
-                </p>
-                <div className="space-y-4">
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        className="w-full px-5 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-400 transition"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <input
-                        type="password"
-                        placeholder="Пароль"
-                        className="w-full px-5 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-400 transition"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                </div>
-                <button
-                    onClick={handleLogin}
-                    disabled={loading}
-                    className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold tracking-wide hover:bg-indigo-700 active:scale-95 transition-transform"
-                >
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-10 space-y-6">
+                <h2 className="text-3xl font-bold text-center text-gray-800">Вхід</h2>
+                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border p-3 rounded" />
+                <input type="password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border p-3 rounded" />
+                <button onClick={handleLogin} disabled={loading} className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">
                     {loading ? "Завантаження..." : "Увійти"}
                 </button>
-                <p className="text-center text-gray-400 text-sm">
-                    Немає акаунту?{" "}
-                    <a href="/register" className="text-indigo-600 font-semibold hover:underline">
-                        Зареєструватися
-                    </a>
+                <p className="text-sm text-center text-gray-600">
+                    Ще не маєш акаунту? <a href="/signup" className="text-blue-600 font-medium">Зареєструватися</a>
                 </p>
             </div>
         </div>

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import {useNavigate} from "react-router-dom";
 
 export default function AdListPage() {
     const [ads, setAds] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         api.get("/ads")
@@ -10,9 +12,9 @@ export default function AdListPage() {
             .catch(err => console.error(err));
     }, []);
 
-    const showAd = () =>
+    const showDetailAd = (id) =>
     {
-        
+            navigate(`/ads/${id}`);
     }
 
     return (
@@ -25,7 +27,7 @@ export default function AdListPage() {
                         <p className="text-gray-600 mt-2">{ad.description}</p>
                         <p className="mt-4 font-bold text-indigo-600">${ad.price}</p>
                         <button
-                            onClick={showAd}
+                            onClick={() => showDetailAd(ad.id)}
                             className="mt-3 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition">
                             Деталі
                         </button>

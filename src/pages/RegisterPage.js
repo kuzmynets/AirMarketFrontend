@@ -1,5 +1,6 @@
 import { useState } from "react";
-import api from "../api/api";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function SignupPage() {
     const [email, setEmail] = useState("");
@@ -12,62 +13,34 @@ export default function SignupPage() {
             alert("Паролі не співпадають");
             return;
         }
+
         setLoading(true);
         try {
-            const res = await api.post("/auth/register", { email, password });
-            localStorage.setItem("token", res.data.access_token);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const token = await userCredential.user.getIdToken();
+            localStorage.setItem("token", token);
             window.location.href = "/";
             alert("Реєстрація успішна!");
-        } catch {
-            alert("Помилка при реєстрації");
+        } catch (error) {
+            console.error(error);
+            alert("Помилка при реєстрації: " + error.message);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-r from-purple-700 via-pink-600 to-red-500 flex items-center justify-center px-4">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-10 space-y-6">
-                <h2 className="text-4xl font-extrabold text-center text-gray-800 tracking-tight">
-                    Реєстрація в AirMarket
-                </h2>
-                <p className="text-center text-gray-500">
-                    Створи акаунт, щоб почати продавати й купувати
-                </p>
-                <div className="space-y-4">
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        className="w-full px-5 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-4 focus:ring-pink-400 transition"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <input
-                        type="password"
-                        placeholder="Пароль"
-                        className="w-full px-5 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-4 focus:ring-pink-400 transition"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <input
-                        type="password"
-                        placeholder="Підтвердження пароля"
-                        className="w-full px-5 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-4 focus:ring-pink-400 transition"
-                        value={confirm}
-                        onChange={(e) => setConfirm(e.target.value)}
-                    />
-                </div>
-                <button
-                    onClick={handleSignup}
-                    disabled={loading}
-                    className="w-full bg-pink-600 text-white py-3 rounded-xl font-semibold tracking-wide hover:bg-pink-700 active:scale-95 transition-transform"
-                >
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-10 space-y-6">
+                <h2 className="text-3xl font-bold text-center text-gray-800">Реєстрація</h2>
+                <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border p-3 rounded" />
+                <input type="password" placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border p-3 rounded" />
+                <input type="password" placeholder="Підтвердження пароля" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="w-full border p-3 rounded" />
+                <button onClick={handleSignup} disabled={loading} className="w-full bg-pink-600 text-white p-3 rounded hover:bg-pink-700">
                     {loading ? "Завантаження..." : "Зареєструватись"}
                 </button>
-                <p className="text-center text-gray-400 text-sm">
-                    Вже маєш акаунт?{" "}
-                    <a href="/login" className="text-pink-600 font-semibold hover:underline">
-                        Увійти
-                    </a>
+                <p className="text-sm text-center text-gray-600">
+                    Вже маєш акаунт? <a href="/login" className="text-pink-600 font-medium">Увійти</a>
                 </p>
             </div>
         </div>

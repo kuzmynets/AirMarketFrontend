@@ -44,6 +44,12 @@ export default function Navbar() {
                         >
                             Вийти
                         </button>
+                        <Link
+                            to="/profile"
+                            className="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded transition"
+                        >
+                            Профіль
+                        </Link>
                     </>
                 ) : (
                     <>
