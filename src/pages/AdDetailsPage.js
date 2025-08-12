@@ -1,29 +1,71 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import api from "../api/api";
 
-export default function AdDetailsPage() {
+export default function AdDetailPage() {
     const { id } = useParams();
     const [ad, setAd] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`http://localhost:8000/ads/${id}`)
-            .then((res) => res.json())
-            .then((data) => setAd(data))
-            .catch((err) => console.error("Помилка при завантаженні:", err));
+        const fetchAd = async () => {
+            try {
+                const res = await api.get(`/ads/${id}`);
+                setAd(res.data);
+            } catch (err) {
+                console.error(err);
+            }
+            setLoading(false);
+        };
+        fetchAd();
     }, [id]);
 
-    if (!ad) {
-        return <div className="text-center mt-10 text-gray-500">Завантаження...</div>;
-    }
+    const toggleFavorite = async () => {
+        try {
+            await api.post(`/ads/${id}/favorite`);
+            setAd(prev => ({ ...prev, is_favorite: !prev.is_favorite }));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    if (loading) return <p>Завантаження...</p>;
+    if (!ad) return <p>Оголошення не знайдено</p>;
 
     return (
-        <div className="max-w-3xl mx-auto mt-10 bg-white p-6 shadow rounded">
-            {ad.image_url && (
-                <img src={ad.image_url} alt={ad.title} className="w-full h-96 object-cover rounded mb-6" />
-            )}
-            <h1 className="text-3xl font-bold mb-2">{ad.title}</h1>
-            <p className="text-gray-600 text-lg mb-4">{ad.description}</p>
-            <p className="text-xl font-semibold text-indigo-600 mb-4">Ціна: {ad.price} грн</p>
+        <div className="max-w-4xl mx-auto py-6 px-4">
+            {/* Фото */}
+            <div className="flex gap-2 overflow-x-auto mb-4">
+                {ad.images.map((img, i) => (
+                    <img key={i} src={img} alt="" className="h-64 rounded object-cover" />
+                ))}
+            </div>
+
+            {/* Інформація */}
+            <h1 className="text-3xl font-bold">{ad.title}</h1>
+            <p className="text-xl text-green-600 font-semibold">{ad.price} грн</p>
+            <p className="mt-3">{ad.description}</p>
+
+            {/* Продавець */}
+            <div className="mt-6 p-4 border rounded flex items-center gap-4">
+                <img src={ad.seller.avatar} alt="avatar" className="w-16 h-16 rounded-full object-cover" />
+                <div>
+                    <p className="font-bold">{ad.seller.name}</p>
+                    <button className="text-blue-600 hover:underline">
+                        Написати продавцю
+                    </button>
+                </div>
+            </div>
+
+            {/* Кнопки */}
+            <div className="mt-6 flex gap-3">
+                <button
+                    onClick={toggleFavorite}
+                    className={`px-4 py-2 rounded ${ad.is_favorite ? "bg-red-500 text-white" : "bg-gray-200"}`}
+                >
+                    {ad.is_favorite ? "Прибрати з вибраного" : "Додати у вибране"}
+                </button>
+            </div>
         </div>
     );
 }
