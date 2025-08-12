@@ -38,6 +38,12 @@ export default function Navbar() {
                         >
                             Додати оголошення
                         </Link>
+                        <Link
+                            to="/favorites"
+                            className="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded transition"
+                        >
+                            Вибране
+                        </Link>
                         <button
                             onClick={handleLogout}
                             className="bg-red-500 hover:bg-red-400 px-4 py-2 rounded transition"

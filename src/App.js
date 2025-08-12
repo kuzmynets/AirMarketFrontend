@@ -6,6 +6,7 @@ import AdListPage from "./pages/AdListPage";
 import CreateAdPage from "./pages/CreateAdPage";
 import AdDetailsPage from "./pages/AdDetailsPage";
 import ProfilePage from "./pages/ProfilePage";
+import FavoritePage from "./pages/FavoritesPage";
 
 export default function App() {
     return (
@@ -18,6 +19,7 @@ export default function App() {
                 <Route path="/create" element={<CreateAdPage />} />
                 <Route path="/ads/:id" element={<AdDetailsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/favorites" element={<FavoritePage />} />
             </Routes>
         </Router>
     );
