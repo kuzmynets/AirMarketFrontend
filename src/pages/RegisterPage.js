@@ -19,10 +19,10 @@ export default function Registration() {
         try {
             setLoading(true);
             await registerWithEmail({ email, password, firstName, lastName, middleName });
-            alert("Успішна реєстрація!");
+            alert("✅ Успішна реєстрація!");
             window.location.href = "/";
         } catch (err) {
-            alert("Помилка при реєстрації");
+            alert("❌ Помилка при реєстрації");
             console.error(err);
         } finally {
             setLoading(false);
@@ -34,7 +34,7 @@ export default function Registration() {
             await loginWithGoogle();
             window.location.href = "/";
         } catch (err) {
-            alert("Помилка входу через Google");
+            alert("❌ Помилка входу через Google");
             console.error(err);
         }
     };
@@ -42,6 +42,7 @@ export default function Registration() {
     return (
         <div className="max-w-md mx-auto p-6">
             <h2 className="text-2xl font-bold mb-4">Реєстрація</h2>
+
             <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Ім’я" className="w-full mb-2 p-2 border rounded" />
             <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Прізвище" className="w-full mb-2 p-2 border rounded" />
             <input value={middleName} onChange={e => setMiddleName(e.target.value)} placeholder="По батькові" className="w-full mb-2 p-2 border rounded" />

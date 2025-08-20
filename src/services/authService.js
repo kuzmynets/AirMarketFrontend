@@ -1,4 +1,3 @@
-// src/services/authService.js
 import { auth, db } from "../firebase";
 import {
     createUserWithEmailAndPassword,
@@ -14,7 +13,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 export { auth };
 
 // Реєстрація
-export const registerWithEmail = async (email, password, firstName, lastName) => {
+export const registerWithEmail = async ({ email, password, firstName, lastName, middleName }) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -27,8 +26,8 @@ export const registerWithEmail = async (email, password, firstName, lastName) =>
         email: user.email,
         first_name: firstName,
         last_name: lastName,
+        middle_name: middleName || "",
         created_at: new Date(),
-        favorites: [],
     });
 
     return user;
@@ -46,7 +45,7 @@ export const loginWithGoogle = async () => {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
-    // Якщо це новий користувач — додамо його в Firestore
+    // Якщо новий користувач — додамо в Firestore
     const userDoc = await getDoc(doc(db, "users", user.uid));
     if (!userDoc.exists()) {
         await setDoc(doc(db, "users", user.uid), {
@@ -55,7 +54,6 @@ export const loginWithGoogle = async () => {
             first_name: user.displayName?.split(" ")[0] || "",
             last_name: user.displayName?.split(" ")[1] || "",
             created_at: new Date(),
-            favorites: [],
         });
     }
 
@@ -67,7 +65,7 @@ export const logout = async () => {
     await signOut(auth);
 };
 
-// Отримати поточного користувача
+// Поточний користувач
 export const getCurrentUser = () => {
     return new Promise((resolve, reject) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -77,17 +75,17 @@ export const getCurrentUser = () => {
     });
 };
 
-// Слухач стану авторизації (аналог onAuth)
+// Слухач авторизації
 export const onAuth = (callback) => {
     return onAuthStateChanged(auth, callback);
 };
 
-// Чи залогінений користувач
+// Чи залогінений
 export const isLoggedIn = () => {
     return auth.currentUser != null;
 };
 
-// Дані користувача з Firestore
+// Дані користувача
 export const getUserData = async (uid) => {
     const userDoc = await getDoc(doc(db, "users", uid));
     return userDoc.exists() ? userDoc.data() : null;
