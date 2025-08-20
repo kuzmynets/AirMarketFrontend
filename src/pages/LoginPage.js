@@ -13,7 +13,7 @@ export default function Login() {
             alert("Успішний вхід!");
             window.location.href = "/";
         } catch (err) {
-            alert("Неправильний email або пароль");
+            alert("Помилка входу");
             console.error(err);
         } finally {
             setLoading(false);
