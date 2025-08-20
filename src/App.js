@@ -1,26 +1,24 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import AdListPage from "./pages/AdListPage";
+import AdDetailPage from "./pages/AdDetailsPage";
+import AddAdPage from "./pages/AddAdPage";
+import FavoritesPage from "./pages/FavoritesPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import AdListPage from "./pages/AdListPage";
-import CreateAdPage from "./pages/CreateAdPage";
-import AdDetailsPage from "./pages/AdDetailsPage";
-import ProfilePage from "./pages/ProfilePage";
-import FavoritePage from "./pages/FavoritesPage";
 
 export default function App() {
     return (
-        <Router>
+        <BrowserRouter>
             <Navbar />
             <Routes>
                 <Route path="/" element={<AdListPage />} />
+                <Route path="/ads/:id" element={<AdDetailPage />} />
+                <Route path="/create" element={<AddAdPage />} />
+                <Route path="/favorites" element={<FavoritesPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
-                <Route path="/create" element={<CreateAdPage />} />
-                <Route path="/ads/:id" element={<AdDetailsPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/favorites" element={<FavoritePage />} />
             </Routes>
-        </Router>
+        </BrowserRouter>
     );
 }

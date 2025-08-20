@@ -1,57 +1,94 @@
+// src/services/authService.js
+import { auth, db } from "../firebase";
 import {
     createUserWithEmailAndPassword,
-    updateProfile,
     signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    updateProfile,
     GoogleAuthProvider,
-    signInWithPopup
+    signInWithPopup,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";
 
-export const registerUser = async ({ email, password, firstName, lastName, middleName }) => {
-    const userCred = await createUserWithEmailAndPassword(auth, email, password);
-    const displayName = `${firstName} ${lastName || ""}`.trim();
-    await updateProfile(userCred.user, { displayName });
+export { auth };
 
-    await setDoc(doc(db, "users", userCred.user.uid), {
-        first_name: firstName,
-        last_name: lastName || "",
-        middle_name: middleName || "",
-        email,
-        avatar: "",
-        created_at: new Date().toISOString()
+// Реєстрація
+export const registerWithEmail = async (email, password, firstName, lastName) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    await updateProfile(user, {
+        displayName: `${firstName} ${lastName}`,
     });
 
-    const token = await userCred.user.getIdToken();
-    localStorage.setItem("token", token);
+    await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        first_name: firstName,
+        last_name: lastName,
+        created_at: new Date(),
+        favorites: [],
+    });
+
+    return user;
 };
 
-export const loginUser = async ({ email, password }) => {
-    const userCred = await signInWithEmailAndPassword(auth, email, password);
-    const token = await userCred.user.getIdToken();
-    localStorage.setItem("token", token);
+// Логін з email
+export const loginWithEmail = async (email, password) => {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
 };
 
+// Логін через Google
 export const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
 
-    const userRef = doc(db, "users", user.uid);
-    const snap = await getDoc(userRef);
-
-    if (!snap.exists()) {
-        const [firstName = "", lastName = ""] = (user.displayName || "").split(" ");
-        await setDoc(userRef, {
-            first_name: firstName,
-            last_name: lastName,
-            middle_name: "",
+    // Якщо це новий користувач — додамо його в Firestore
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid,
             email: user.email,
-            avatar: user.photoURL || "",
-            created_at: new Date().toISOString()
+            first_name: user.displayName?.split(" ")[0] || "",
+            last_name: user.displayName?.split(" ")[1] || "",
+            created_at: new Date(),
+            favorites: [],
         });
     }
 
-    const token = await user.getIdToken();
-    localStorage.setItem("token", token);
+    return user;
+};
+
+// Логаут
+export const logout = async () => {
+    await signOut(auth);
+};
+
+// Отримати поточного користувача
+export const getCurrentUser = () => {
+    return new Promise((resolve, reject) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            unsubscribe();
+            resolve(user);
+        }, reject);
+    });
+};
+
+// Слухач стану авторизації (аналог onAuth)
+export const onAuth = (callback) => {
+    return onAuthStateChanged(auth, callback);
+};
+
+// Чи залогінений користувач
+export const isLoggedIn = () => {
+    return auth.currentUser != null;
+};
+
+// Дані користувача з Firestore
+export const getUserData = async (uid) => {
+    const userDoc = await getDoc(doc(db, "users", uid));
+    return userDoc.exists() ? userDoc.data() : null;
 };

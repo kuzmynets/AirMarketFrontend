@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { registerUser, loginWithGoogle } from "../services/authService";
+import { registerWithEmail, loginWithGoogle } from "../services/authService";
 
 export default function Registration() {
     const [email, setEmail] = useState("");
@@ -18,7 +18,7 @@ export default function Registration() {
 
         try {
             setLoading(true);
-            await registerUser({ email, password, firstName, lastName, middleName });
+            await registerWithEmail({ email, password, firstName, lastName, middleName });
             alert("Успішна реєстрація!");
             window.location.href = "/";
         } catch (err) {

@@ -1,39 +1,50 @@
+// src/pages/AdListPage.jsx
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/api";
-import {useNavigate} from "react-router-dom";
+import { onAuth } from "../services/authService";
+
+const placeholder = "https://placehold.co/600x400?text=No+Image";
 
 export default function AdListPage() {
     const [ads, setAds] = useState([]);
-    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        api.get("/ads")
-            .then(res => setAds(res.data))
-            .catch(err => console.error(err));
+        const unsub = onAuth(setUser);
+        return () => unsub();
     }, []);
 
-    const showDetailAd = (id) =>
-    {
-            navigate(`/ads/${id}`);
-    }
+    useEffect(() => {
+        let mounted = true;
+        api.get("/ads") // без фінального /
+            .then(res => mounted && setAds(res.data || []))
+            .catch(console.error)
+            .finally(() => mounted && setLoading(false));
+        return () => (mounted = false);
+    }, []);
+
+    if (loading) return <p className="text-center mt-10">Завантаження…</p>;
 
     return (
-        <div className="max-w-5xl mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-6">Оголошення</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {ads.map((ad) => (
-                    <div key={ad.id} className="border rounded-lg p-4 shadow hover:shadow-lg transition">
-                        <h2 className="text-xl font-semibold">{ad.title}</h2>
-                        <p className="text-gray-600 mt-2">{ad.description}</p>
-                        <p className="mt-4 font-bold text-indigo-600">${ad.price}</p>
-                        <button
-                            onClick={() => showDetailAd(ad.id)}
-                            className="mt-3 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition">
-                            Деталі
-                        </button>
+        <div className="max-w-6xl mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {ads.map(ad => (
+                <Link key={ad.id} to={`/ads/${ad.id}`} className="border rounded-lg overflow-hidden hover:shadow transition">
+                    <img
+                        src={(ad.images && ad.images[0]) || placeholder}
+                        alt={ad.title}
+                        className="h-48 w-full object-cover"
+                    />
+                    <div className="p-4">
+                        <h3 className="font-semibold line-clamp-1">{ad.title}</h3>
+                        <div className="mt-2 flex items-center justify-between">
+                            <span className="text-green-600 font-bold">{ad.price} грн</span>
+                            {user && ad.is_favorite && <span className="text-red-500">♥</span>}
+                        </div>
                     </div>
-                ))}
-            </div>
+                </Link>
+            ))}
         </div>
     );
 }

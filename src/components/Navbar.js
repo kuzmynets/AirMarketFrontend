@@ -1,77 +1,31 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+// src/components/Navbar.jsx
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { onAuth, logout } from "../services/authService";
 
 export default function Navbar() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        setIsLoggedIn(!!localStorage.getItem("token"));
+        const unsub = onAuth(setUser);
+        return () => unsub();
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        setIsLoggedIn(false);
-        navigate("/");
-    };
-
     return (
-        <nav className="bg-indigo-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
-            <Link to="/" className="text-xl font-bold hover:text-indigo-300">
-                AirMarket
-            </Link>
-
-            <div className="space-x-6 flex items-center">
-                <Link
-                    to="/"
-                    className="hover:text-indigo-300 transition"
-                    aria-label="Головна"
-                >
-                    Головна
-                </Link>
-
-                {isLoggedIn ? (
+        <nav className="px-4 py-3 border-b bg-white flex items-center justify-between">
+            <Link to="/" className="font-bold text-xl">AirMarket</Link>
+            <div className="flex items-center gap-4">
+                <Link to="/">Головна</Link>
+                {user && <Link to="/create">Додати оголошення</Link>}
+                {user && <Link to="/favorites">Вибране</Link>}
+                {user && <Link to="/profile">Профіль</Link>}
+                {!user ? (
                     <>
-                        <Link
-                            to="/create"
-                            className="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded transition"
-                        >
-                            Додати оголошення
-                        </Link>
-                        <Link
-                            to="/favorites"
-                            className="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded transition"
-                        >
-                            Вибране
-                        </Link>
-                        <button
-                            onClick={handleLogout}
-                            className="bg-red-500 hover:bg-red-400 px-4 py-2 rounded transition"
-                        >
-                            Вийти
-                        </button>
-                        <Link
-                            to="/profile"
-                            className="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded transition"
-                        >
-                            Профіль
-                        </Link>
+                        <Link to="/login">Увійти</Link>
+                        <Link to="/register" className="px-3 py-1 rounded bg-indigo-600 text-white">Реєстрація</Link>
                     </>
                 ) : (
-                    <>
-                        <Link
-                            to="/login"
-                            className="hover:text-indigo-300 transition"
-                        >
-                            Увійти
-                        </Link>
-                        <Link
-                            to="/register"
-                            className="hover:text-indigo-300 transition"
-                        >
-                            Реєстрація
-                        </Link>
-                    </>
+                    <button onClick={logout} className="px-3 py-1 rounded bg-gray-200">Вийти</button>
                 )}
             </div>
         </nav>

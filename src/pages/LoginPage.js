@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { loginUser, loginWithGoogle } from "../services/authService";
+import { loginWithEmail, loginWithGoogle } from "../services/authService";
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -9,7 +9,7 @@ export default function Login() {
     const handleLogin = async () => {
         try {
             setLoading(true);
-            await loginUser({ email, password });
+            await loginWithEmail({ email, password });
             alert("Успішний вхід!");
             window.location.href = "/";
         } catch (err) {
