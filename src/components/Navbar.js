@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { onAuth } from "../services/authService";
-import { Home, PlusSquare, Heart, User } from "lucide-react";
+import { Home, PlusSquare, Heart, User, MessageSquare } from "lucide-react"; // додали MessageSquare
 
 export default function Navbar({ children }) {
     const [user, setUser] = useState(null);
     const location = useLocation();
 
-    const topBarHeight = 64;   // px
-    const bottomBarHeight = 56; // px
+    const topBarHeight = 64;
+    const bottomBarHeight = 56;
 
     useEffect(() => {
         const unsub = onAuth(setUser);
@@ -24,6 +24,7 @@ export default function Navbar({ children }) {
                     <Link to="/">Головна</Link>
                     {user && <Link to="/create">Додати оголошення</Link>}
                     {user && <Link to="/favorites">Вибране</Link>}
+                    {user && <Link to="/chats">Чати</Link>} {/* Нова вкладка */}
                     {user && <Link to="/profile">Профіль</Link>}
                     {!user ? (
                         <>
@@ -72,6 +73,10 @@ export default function Navbar({ children }) {
                     <Link to="/favorites" className={`flex flex-col items-center ${location.pathname === "/favorites" ? "text-indigo-600" : "text-gray-600"}`}>
                         <Heart size={22} />
                         <span className="text-xs">Вибране</span>
+                    </Link>
+                    <Link to="/chats" className={`flex flex-col items-center ${location.pathname === "/chats" ? "text-indigo-600" : "text-gray-600"}`}>
+                        <MessageSquare size={22} />
+                        <span className="text-xs">Чати</span>
                     </Link>
                     <Link to="/profile" className={`flex flex-col items-center ${location.pathname === "/profile" ? "text-indigo-600" : "text-gray-600"}`}>
                         <User size={22} />

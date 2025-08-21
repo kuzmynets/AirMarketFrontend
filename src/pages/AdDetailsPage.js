@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import api from "../api/api";
 import { onAuth } from "../services/authService";
+import { auth } from "../firebase";
 
 const noAvatar = "https://placehold.co/100x100?text=👤";
 const noImage = "https://placehold.co/800x600?text=No+Image";
@@ -43,6 +44,29 @@ export default function AdDetailsPage() {
         }
     };
 
+    const startChat = async () => {
+        if (!isAuth) {
+            navigate("/login");
+            return;
+        }
+        if (!ad?.seller?.uid) {
+            alert("Неможливо визначити продавця для чату");
+            return;
+        }
+        try {
+            const token = await auth.currentUser.getIdToken();
+            // Створюємо або отримуємо chat_id
+            const res = await api.post(`/chat/${ad.seller.uid}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const chatId = res.data.chat_id;
+            navigate(`/chat/${chatId}`);
+        } catch (err) {
+            console.error(err);
+            alert("Помилка при створенні чату");
+        }
+    };
+
     if (loading) return <p className="text-center mt-10">Завантаження…</p>;
     if (!ad) return <p className="text-center mt-10">Оголошення не знайдено</p>;
 
@@ -79,9 +103,17 @@ export default function AdDetailsPage() {
                 <div>
                     <p className="font-bold">{sellerName}</p>
                     {isAuth ? (
-                        <button className="text-blue-600 hover:underline">Написати продавцю</button>
+                        <button
+                            onClick={startChat}
+                            className="text-blue-600 underline hover:text-blue-800"
+                        >
+                            Написати продавцю
+                        </button>
                     ) : (
-                        <button onClick={() => navigate("/login")} className="text-blue-600 hover:underline">
+                        <button
+                            onClick={() => navigate("/login")}
+                            className="text-blue-600 hover:underline"
+                        >
                             Увійдіть, щоб написати продавцю
                         </button>
                     )}

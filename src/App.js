@@ -8,6 +8,8 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import EditAdPage from "./pages/EditAdPage";
+import ChatPage from "./pages/ChatPage";
+import ChatsPage from "./pages/ChatsPage";
 
 export default function App() {
     return (
@@ -22,6 +24,8 @@ export default function App() {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/ads/:id/edit" element={<EditAdPage />} />
+                <Route path="/chat/:chatId" element={<ChatPage />} />
+                <Route path="/chats" element={<ChatsPage />} />
             </Routes>
         </BrowserRouter>
     );
