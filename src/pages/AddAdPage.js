@@ -18,6 +18,47 @@ export default function AddAdPage() {
         return () => unsub();
     }, [navigate]);
 
+    const uploadToImgBB = async (file) => {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const res = await fetch(
+            `https://api.imgbb.com/1/upload?key=${process.env.REACT_APP_IMGBB_API_KEY}`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        const data = await res.json();
+        if (!data.success) throw new Error("Upload failed");
+        return data.data.url;
+    };
+
+    const handleImageUpload = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        setLoading(true);
+        try {
+            const uploaded = await Promise.all(files.map(uploadToImgBB));
+            setImages((prev) => [...prev, ...uploaded]);
+        } catch (err) {
+            console.error(err);
+            alert("Помилка при завантаженні зображення");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleImageUrlsPaste = (e) => {
+        const urls = e.target.value
+            .split("\n")
+            .map(s => s.trim())
+            .filter(Boolean);
+        setImages(urls);
+    };
+
     const handleAddAd = async () => {
         if (!title || !price) {
             alert("Заповни всі обов'язкові поля");
@@ -41,15 +82,6 @@ export default function AddAdPage() {
         }
     };
 
-    // приклад: приймаємо вже готові URL з imgbb та пушимо у state
-    const handleImageUrlsPaste = (e) => {
-        const urls = e.target.value
-            .split("\n")
-            .map(s => s.trim())
-            .filter(Boolean);
-        setImages(urls);
-    };
-
     if (!isLoggedIn()) return null;
 
     return (
@@ -68,8 +100,11 @@ export default function AddAdPage() {
                    onChange={(e) => setPrice(e.target.value)}
                    className="w-full border p-2 mb-3 rounded" />
 
+            <h3 className="font-semibold mt-4">Фото</h3>
+            <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="mb-3" />
+
             <textarea
-                placeholder="Встав кілька URL фото (imgbb), по одному в рядок)"
+                placeholder="Або встав кілька URL фото (imgbb), по одному в рядок"
                 className="w-full border p-2 mb-3 rounded"
                 onChange={handleImageUrlsPaste}
             />
@@ -83,8 +118,9 @@ export default function AddAdPage() {
             </div>
 
             <button onClick={handleAddAd}
+                    disabled={loading}
                     className="bg-blue-600 text-white px-4 py-2 rounded mt-4 hover:bg-blue-700">
-                Створити оголошення
+                {loading ? "Збереження..." : "Створити оголошення"}
             </button>
         </div>
     );
