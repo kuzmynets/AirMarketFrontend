@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/api";
 import { onAuth } from "../services/authService";
-import Modal from "../components/Modal";
+import Notification from "../components/Notification";
 
 const placeholder = "https://placehold.co/600x400?text=No+Image";
 
@@ -10,7 +10,7 @@ export default function AdListPage() {
     const [ads, setAds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
-    const [error, setError] = useState(null);
+    const [notification, setNotification] = useState(null);
 
     useEffect(() => {
         const unsub = onAuth(setUser);
@@ -19,25 +19,34 @@ export default function AdListPage() {
 
     useEffect(() => {
         let mounted = true;
-        api
-            .get("/ads")
-            .then((res) => mounted && setAds(res.data || []))
+        api.get("/ads")
+            .then((res) => {
+                if (mounted) setAds(res.data || []);
+            })
             .catch((err) => {
                 console.error(err);
-                setError("Не вдалося завантажити оголошення");
+                if (mounted) showNotification("Не вдалося завантажити оголошення", "error");
             })
-            .finally(() => mounted && setLoading(false));
+            .finally(() => {
+                if (mounted) setLoading(false);
+            });
         return () => (mounted = false);
     }, []);
 
-    if (loading)
-        return <p className="text-center mt-10 text-lg font-medium">Завантаження…</p>;
+    const showNotification = (text, type = "success") => {
+        setNotification({ text, type });
+        setTimeout(() => setNotification(null), 3000);
+    };
+
+    if (loading) return <p className="text-center mt-10 text-lg font-medium">Завантаження…</p>;
 
     return (
-        <div className="max-w-7xl mx-auto p-4">
-            <Modal open={!!error} onClose={() => setError(null)} title="Помилка">
-                <p>{error}</p>
-            </Modal>
+        <div className="max-w-7xl mx-auto px-4 py-10 md:py-16">
+
+            {/* Notification */}
+            {notification && (
+                <Notification text={notification.text} type={notification.type} />
+            )}
 
             {ads.length === 0 ? (
                 <p className="text-center mt-10 text-gray-500">
@@ -59,8 +68,8 @@ export default function AdListPage() {
                                 />
                                 {user && ad.is_favorite && (
                                     <span className="absolute top-2 right-2 text-red-500 text-2xl drop-shadow">
-                        ♥
-                    </span>
+                                        ♥
+                                    </span>
                                 )}
                             </div>
 
