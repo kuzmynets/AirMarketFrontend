@@ -5,7 +5,6 @@ import { onAuth } from "../services/authService";
 import { auth } from "../firebase";
 import Notification from "../components/Notification";
 
-
 const noAvatar = "https://placehold.co/100x100?text=👤";
 const noImage = "https://placehold.co/800x600?text=No+Image";
 
@@ -77,15 +76,22 @@ export default function AdDetailsPage() {
     const avatar = seller.avatar || noAvatar;
     const sellerName = seller.name || "Невідомий продавець";
 
+    const displayPrice = ad.price === 0 ? "Безкоштовно" : `${ad.price} грн`;
+
+    // Форматування дати створення оголошення
+    const createdAt = ad.created_at ? new Date(ad.created_at).toLocaleDateString("uk-UA", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+    }) : null;
+
     return (
         <div className="max-w-5xl mx-auto px-4 pt-10 pb-20 md:pt-16 md:pb-32 relative">
 
-            {/* Notification */}
             {notification && (
                 <Notification text={notification.text} type={notification.type} />
             )}
 
-            {/* Fullscreen перегляд фото */}
             {previewOpen && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
@@ -118,7 +124,6 @@ export default function AdDetailsPage() {
                 </div>
             )}
 
-            {/* Прев’ю каруселі */}
             <div className="flex gap-2 overflow-x-auto rounded-lg mb-6">
                 {images.map((img, i) => (
                     <div
@@ -131,9 +136,16 @@ export default function AdDetailsPage() {
                 ))}
             </div>
 
-            <h1 className="text-3xl font-bold mb-4">{ad.title}</h1>
+            <h1 className="text-3xl font-bold mb-2">{ad.title}</h1>
+
+            {createdAt && (
+                <p className="text-gray-500 text-sm mb-2">
+                    Створено: {createdAt}
+                </p>
+            )}
+
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-2 gap-2 mb-4">
-                <p className="text-2xl text-green-600 font-semibold">{ad.price} грн</p>
+                <p className="text-2xl text-green-600 font-semibold">{displayPrice}</p>
                 {isAuth && (
                     <button
                         onClick={toggleFavorite}

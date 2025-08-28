@@ -10,7 +10,7 @@ export default function AddAdPage() {
     const [description, setDescription] = useState("");
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null); // Для Notification
+    const [message, setMessage] = useState(null);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [currentPreview, setCurrentPreview] = useState(0);
 
@@ -25,7 +25,7 @@ export default function AddAdPage() {
 
     const showMessage = (text, type = "success") => {
         setMessage({ text, type });
-        setTimeout(() => setMessage(null), 3000); // зникає через 3 секунди
+        setTimeout(() => setMessage(null), 3000);
     };
 
     const uploadToImgBB = async (file) => {
@@ -48,8 +48,7 @@ export default function AddAdPage() {
         try {
             const uploaded = await Promise.all(files.map(uploadToImgBB));
             setImages((prev) => [...prev, ...uploaded]);
-        } catch (err) {
-            console.error(err);
+        } catch {
             showMessage("Помилка при завантаженні зображень", "error");
         } finally {
             setLoading(false);
@@ -65,22 +64,34 @@ export default function AddAdPage() {
     };
 
     const handleAddAd = async () => {
-        if (!title || !price) {
-            showMessage("Заповніть всі обов'язкові поля", "error");
+        if (!title.trim()) {
+            showMessage("Введіть назву оголошення", "error");
             return;
         }
+
+        if (price.trim() === "") {
+            showMessage("Введіть ціну", "error");
+            return;
+        }
+
+        const numericPrice = parseFloat(price);
+
+        if (isNaN(numericPrice) || numericPrice < 0) {
+            showMessage("Не вірно вказана ціна", "error");
+            return;
+        }
+
         setLoading(true);
         try {
             await api.post("/ads", {
                 title,
                 description,
-                price: parseFloat(price),
+                price: numericPrice,
                 images,
             });
             showMessage("Оголошення скоро буде додано!", "success");
             setTimeout(() => navigate("/"), 1000);
-        } catch (e) {
-            console.error(e);
+        } catch {
             showMessage("Помилка при додаванні оголошення", "error");
         } finally {
             setLoading(false);
@@ -91,8 +102,6 @@ export default function AddAdPage() {
 
     return (
         <div className="max-w-xl mx-auto px-4 py-10 md:py-16 relative">
-
-            {/* Notification зверху */}
             <Notification message={message} />
 
             <h1 className="text-2xl font-bold mb-4 text-center md:text-left">Нове оголошення</h1>
@@ -114,10 +123,11 @@ export default function AddAdPage() {
 
             <input
                 type="number"
-                placeholder="Ціна"
+                placeholder="Ціна (0 -> безкоштовно)"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 className="w-full border p-2 mb-3 rounded"
+                min="0"
             />
 
             <h3 className="font-semibold mt-4 mb-1">Фото</h3>
@@ -129,12 +139,11 @@ export default function AddAdPage() {
                 className="mb-3 w-full"
             />
             <textarea
-                placeholder="Або встав кілька URL фото (imgbb), по одному в рядок"
+                placeholder="Або встав кілька URL фото, по одному в рядок"
                 className="w-full border p-2 mb-3 rounded"
                 onChange={handleImageUrlsPaste}
             />
 
-            {/* Прев’ю зображень */}
             <div className="flex flex-wrap gap-2 mb-3">
                 {images.map((url, i) => (
                     <img
@@ -150,7 +159,6 @@ export default function AddAdPage() {
                 ))}
             </div>
 
-            {/* Модаль для перегляду фото full screen */}
             {previewOpen && (
                 <div
                     className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
