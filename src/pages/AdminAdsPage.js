@@ -8,7 +8,6 @@ export default function AdminAdsPage() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
 
-    // ✅ Відстежуємо користувача
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
@@ -38,7 +37,6 @@ export default function AdminAdsPage() {
         }
     }, [user]);
 
-    // 🔹 Підтвердження або відхилення оголошення
     const reviewAd = async (adId, action) => {
         if (!user) return;
         try {
