@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import EditAdPage from "./pages/EditAdPage";
 import ChatPage from "./pages/ChatPage";
 import ChatsPage from "./pages/ChatsPage";
+import AdminAdsPage from "./pages/AdminAdsPage";
 
 export default function App() {
     return (
@@ -26,6 +27,7 @@ export default function App() {
                 <Route path="/ads/:id/edit" element={<EditAdPage />} />
                 <Route path="/chat/:chatId" element={<ChatPage />} />
                 <Route path="/chats" element={<ChatsPage />} />
+                <Route path="/admin/pending_ads" element={<AdminAdsPage />} />
             </Routes>
         </BrowserRouter>
     );

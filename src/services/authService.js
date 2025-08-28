@@ -1,4 +1,3 @@
-// src/services/authService.js
 import { auth, db } from "../firebase";
 import {
     createUserWithEmailAndPassword,
@@ -31,6 +30,7 @@ export const registerWithEmail = async ({ email, password, firstName, lastName, 
         last_name: lastName,
         middle_name: middleName || "",
         avatar: DEFAULT_AVATAR,
+        role: "user",
         created_at: new Date(),
     });
 
@@ -56,6 +56,7 @@ export const loginWithGoogle = async () => {
             first_name: user.displayName?.split(" ")[0] || "",
             last_name: user.displayName?.split(" ")[1] || "",
             avatar: user.photoURL || DEFAULT_AVATAR,
+            role: "user",
             created_at: new Date(),
         });
     }
